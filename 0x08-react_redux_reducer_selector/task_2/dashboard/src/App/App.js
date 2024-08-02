@@ -1,135 +1,166 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { getLatestNotification } from '../utils/utils';
-import { StyleSheet, css} from 'aphrodite';
+import { StyleSheet, css } from 'aphrodite';
 import Header from '../Header/Header';
-import Footer from '../Footer/Footer';
 import Login from '../Login/Login';
-import Notifications from '../Notifications/Notifications';
-import CourseList from '../CourseList/CourseList';
-import BodySectionWithMarginBottom from '../BodySection/BodySectionWithMarginBottom';
 import BodySection from '../BodySection/BodySection';
-import { AppContext, user } from './AppContext'
-
-const styles = StyleSheet.create({
-  AppBody: {
-    fontSize: '1.1rem',
-    paddingLeft: 10,
-    margin: 0,
-  },
-  wrapper: {
-    border: '2px solid #e1484c'
-  }
-})
-
-// const listNotifications = [
-//   { id: 1, value: 'New course available', type: 'default' },
-//   { id: 2, value: 'New resume available', type: 'urgent' },
-//   { id: 3, html: { __html: getLatestNotification }, type: 'urgent' }
-// ]
+import BodySectionWithMarginBottom from '../BodySection/BodySectionWithMarginBottom';
+import Footer from '../Footer/Footer';
+import CourseList from '../CourseList/CourseList';
+import Notifications from '../Notifications/Notifications';
+import { getLatestNotification } from '../utils/utils';
+import { user, logOut } from './AppContext.js';
+import AppContext from './AppContext';
 
 const listCourses = [
-  { id: 1, name: 'ES6', credit: 60 },
-  { id: 2, name: 'Webpack', credit: 20 },
-  { id: 3, name: 'React', credit: 40 }
+  {id: 1, name: 'ES6', credit: 60},
+  {id: 2, name: 'Webpack', credit: 20},
+  {id: 3, name: 'React', credit: 40}
 ];
 
-export default class App extends React.Component {
-  constructor(props){
+const newlistNotifications = [
+  {id: 1, type: 'default', value: 'New course available'},
+  {id: 2, type: 'urgent', value: 'New resume available'},
+  {id: 3, type: 'urgent', html: { __html: getLatestNotification() }}
+];
+
+class App extends React.Component {
+  constructor(props) {
     super(props);
+    this.keyboardKeys = this.keyboardKeys.bind(this);
+    this.handleDisplayDrawer = this.handleDisplayDrawer.bind(this);
+    this.handleHideDrawer = this.handleHideDrawer.bind(this);
+    this.logIn = this.logIn.bind(this);
+    this.logOut = this.logOut.bind(this);
+    this.markNotificationAsRead = this.markNotificationAsRead.bind(this);
     this.state = {
       displayDrawer: false,
       user: user,
-      listCourses: listCourses,
-      listNotifications: [
-        { id: 1, value: 'New course available', type: 'default' },
-        { id: 2, value: 'New resume available', type: 'urgent' },
-        { id: 3, html: { __html: getLatestNotification() }, type: 'urgent' }
-      ]
+      logOut: this.logOut,
+      listNotifications: newlistNotifications
+    };
+  }
+
+  keyboardKeys(x) {
+    if (x.key === 'h' && x.ctrlKey) {
+      alert('Logging you out');
+      this.props.logOut();
     }
   }
 
-  logOut = () => {
-    this.setState({user: user})
+  handleDisplayDrawer() {
+    this.setState({ displayDrawer: true });
   }
 
-  logIn = (email, password) => {
-    const currentUser = {email:email, password:password, isLoggedIn: true}
-    this.setState({user: currentUser })
+  handleHideDrawer() {
+    this.setState({ displayDrawer: false });
   }
 
-  handleDisplayDrawer = () => {
-    this.setState({displayDrawer: true})
+  logIn(email, password) {
+    this.setState({
+      user: {
+        email: email,
+        password: password,
+        isLoggedIn: true
+      },
+    });
   }
 
-  handleHideDrawer = () => {
-    this.setState({displayDrawer: false})
+  logOut() {
+    this.setState({ user: user });
+  }
+
+  markNotificationAsRead(id){
+    this.setState({
+      listNotifications: this.state.listNotifications.filter(notification => notification.id !== id)
+    });
   }
 
   componentDidMount() {
-    this.alert()
-  }
-
-  alert() {
-    document.addEventListener('keydown', (e) => {
-      if (e.ctrlKey && e.code =='KeyH'){
-        e.preventDefault()
-        this.props.logOut()
-        alert('Logging you out')
-      }
-    })
+    document.addEventListener('keydown', this.keyboardKeys);
   }
 
   componentWillUnmount() {
-    window.removeEventListener('keydown', alert)
+    document.addEventListener('keydown', this.keyboardKeys);
   }
 
-  markNotificationAsRead(id) {
-    const Notifications = this.state.listNotifications
-    this.setState({listNotifications: Notifications.filter((notif)=> id != notif.id )})
-  }
+  render() {
+    const { displayDrawer, user, logOut, listNotifications } = this.state;
+    const value = { user, logOut };
 
-  render () {
-    const currentUser = this.state.user
-    const logOut = this.logOut
-    const LoginStatus = () => {
-      if (currentUser.isLoggedIn) {
-        return (
-          <BodySectionWithMarginBottom title="Course List">
-            <CourseList listCourses={this.state.listCourses}/>
-          </BodySectionWithMarginBottom>
-        )
-      } else {
-        return (
-          <BodySectionWithMarginBottom title="Log in to continue">
-            <Login logIn={this.logIn}/>
-          </BodySectionWithMarginBottom>
-        )
-    }
-    
-  }
-  return (
-    <AppContext.Provider value={{currentUser, logOut}}>
-      <>
+    return (
+      <AppContext.Provider value={value}>
         <Notifications
-              listNotifications={this.state.listNotifications}
-              displayDrawer={this.state.displayDrawer}
-              handleDisplayDrawer={this.handleDisplayDrawer} handleHideDrawer={this.handleHideDrawer}
-              markNotificationAsRead={this.markNotificationAsRead}
-            />
-        <Header />
-        <hr className={css(styles.wrapper)}/>
-        <div className={css(styles.AppBody)}>
-          {LoginStatus()}
-          <BodySection title="News from the School">
-            <p>
-              A town hall different from bala blu, blue blu bulaba. broom broom broom brooooooooom. Bala blu blue blu bulaba. The farmers will make more money. Your lunch will not be imported, cassava garri ewa and ehhh ehhhhnn. The farmer will make money, the dinner would be cassava, eba, ewa and everything.
-            </p>
-          </BodySection>
+          listNotifications={listNotifications}
+          displayDrawer={displayDrawer}
+          handleDisplayDrawer={this.handleDisplayDrawer}
+          handleHideDrawer={this.handleHideDrawer}
+          markNotificationAsRead={this.markNotificationAsRead}
+        />
+        <div className={css(styles.App)}>
+          <Header />
         </div>
-        <Footer />
-      </>
-    </AppContext.Provider>
-  );
+        <div className={css(styles.AppBody)}>
+          {
+            user.isLoggedIn ? (
+              <BodySectionWithMarginBottom title="Course list">
+                <CourseList listCourses={listCourses}/>
+              </BodySectionWithMarginBottom>
+            ) : (
+              <BodySectionWithMarginBottom title="Log in to continue">
+                <Login logIn ={this.logIn} />
+              </BodySectionWithMarginBottom>
+            )
+          }
+        </div>
+        <BodySection title="News from the School">
+          <p>
+            Lorem ipsum dolor sit amet, consectetur
+            adipiscing elit, sed do eiusmod tempor
+            incididunt ut labore et dolore magna
+            aliqua. Ut enim ad minim veniam, quis
+            nostrud exercitation ullamco laboris nisi ut
+            aliquip ex ea commodo consequat. Duis
+            aute irure dolor in reprehenderit in
+            voluptate velit esse cillum dolore eu fugiat
+            nulla pariatur. Excepteur sint occaecat
+            cupidatat non proident, sunt in culpa qui
+            officia deserunt mollit anim id est laborum.
+          </p>
+        </BodySection>
+        <div className={css(styles.AppFooter)}>
+          <Footer />
+        </div>
+      </AppContext.Provider>
+    );
   }
 }
+
+const styles = StyleSheet.create({
+  App: {
+    fontFamily: 'Arial, Helvetica, sans-serif',
+    margin: 0,
+    padding: 0
+  },
+
+  AppBody: {
+    fontFamily: 'Arial, Helvetica, sans-serif',
+    height: '60vh',
+    margin: 0,
+    padding: 0
+  },
+
+  AppFooter: {
+    fontFamily: 'Arial, Helvetica, sans-serif',
+    margin: 0,
+    padding: 0,
+    height: '6vh',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderTop: '4px solid #e1354b',
+    textAlign: 'center'
+  },
+});
+
+export default App;

@@ -1,12 +1,9 @@
-/**
- * @jest-environment jsdom
-*/
-import React, { Provider, setState } from 'react';
+import React from 'react';
 import { shallow, mount } from 'enzyme';
 import { StyleSheetTestUtils } from 'aphrodite';
 import App from './App';
 import { user, logOut} from '../App/AppContext';
-import { AppContext } from './AppContext';
+import AppContext from './AppContext';
 
 beforeEach(() => {
   StyleSheetTestUtils.suppressStyleInjection();
@@ -61,20 +58,20 @@ describe('Basic React Tests - When isLoggedIn is true', function() {
 });
 
 describe('Basic React Tests - App Class', function() {
-	// it('When the keys control and h are pressed - Should check that logOut function, passed as a prop, is called and the alert function is called with a string', () => {
-	// 	const events = {};
-	// 	const logout = jest.fn();
+	it('When the keys control and h are pressed - Should check that logOut function, passed as a prop, is called and the alert function is called with a string', () => {
+		const events = {};
+		const logout = jest.fn();
 
-  //   document.addEventListener = jest.fn((event, callback) => {
-  //     events[event] = callback;
-  //   });
+    document.addEventListener = jest.fn((event, callback) => {
+      events[event] = callback;
+    });
 
-	// 	shallow(<App logOut={logout} />);
-	// 	window.alert = jest.fn();
-	// 	events.keydown({ key: "h", ctrlKey: true });
-	// 	expect(window.alert).toHaveBeenCalledWith("Logging you out");
-	// 	jest.restoreAllMocks();
-  // });
+		shallow(<App logOut={logout} />);
+		window.alert = jest.fn();
+		events.keydown({ key: "h", ctrlKey: true });
+		expect(window.alert).toHaveBeenCalledWith("Logging you out");
+		jest.restoreAllMocks();
+  });
 
 	it('Should check that the default state for displayDrawer is false', () => {
 		const wrapper = shallow(<App />);
@@ -108,9 +105,9 @@ describe('Basic React Tests - App Class', function() {
 
 	it('Should check that the logIn function updates the state correctly', () => {
 		const newUser = {
-			email: '',
-			password: '',
-			isLoggedIn: false
+			email: 'minipachru@gmail.com',
+			password: '012345',
+			isLoggedIn: true
 		};
 
 		const wrapper = mount(
@@ -137,7 +134,8 @@ describe('Basic React Tests - App Class', function() {
 
 	it('Should check that markNotificationAsRead func works as intended', () => {
 		const notification = [
-			{"id": 1, "type": "default", "value": "New course available"}, {"id": 2, "type": "urgent", "value": "New resume available"}, {"html": {"__html": "<strong>Urgent requirement</strong> - complete by EOD"}, "id": 3, "type": "urgent"}
+			{ id: 1, type: 'default', value: 'New course available', },
+			{ id: 2, type: 'urgent', value: 'New resume available', },
 		];
 
 		const wrapper = mount(

@@ -1,8 +1,3 @@
-import React, { useState, Fragment } from 'react';
-import PropTypes from 'prop-types';
-import { StyleSheet, css } from 'aphrodite/no-important';
-import { StyleSheetTestUtils } from 'aphrodite';
-
 function rowState() {
 	const [checkBoxState, setCheckBox] = useState(false);
 	const updateCheckBox = () => {
@@ -11,7 +6,7 @@ function rowState() {
 	return { checkBoxState, updateCheckBox };
 }
 
-function CourseListRow({ isHeader, textFirstCell = {textFirstCell}, textSecondCell }) {
+function CourseListRow({ isHeader, textFirstCell, textSecondCell }) {
 	const { checkBoxState, updateCheckBox } = rowState();
 	const styleRow = { backgroundColor: '#f5f5f5ab' };
 	const styleHeaderRow = { backgroundColor: '#deb5b545' };

@@ -1,31 +1,41 @@
-/**
- * @jest-environment jsdom
-*/
 import React from 'react';
 import { shallow, mount } from 'enzyme';
 import Footer from './Footer';
-import { StyleSheetTestUtils } from 'aphrodite';
-import {AppContext, user, logOut} from '../App/AppContext';
+import { user, logOut } from '../App/AppContext';
+import AppContext from '../App/AppContext';
 
-beforeEach(() => {
-  StyleSheetTestUtils.suppressStyleInjection();
-});
+describe('Basic React Tests - <Footer />', function() {
+	it('Should render without crashing', () => {
+		const wrapper = shallow(<Footer />);
+		expect(wrapper.exists()).toBeTruthy();
+	});
 
+	it('Should render footer component and the text Copyright', () => {
+		const wrapper = mount(<Footer />);
+		expect(wrapper.find('.Footer')).toHaveLength(1);
+		expect(wrapper.find('.Footer p').text()).toContain('Copyright');
+	});
 
-const wrapper = shallow(<AppContext.Provider><Footer/></AppContext.Provider>)
-describe('Footer component', () => {
-  it('renders without crashing', () => {
-    expect(wrapper.exists()).toBe(true)
-  })
+	it('Should check that the link is not displayed when the user is logged out within the contex', () => {
+		const wrapper = mount(
+			<AppContext.Provider value={{ user, logOut }}>
+				<Footer />
+			</AppContext.Provider>
+		);
+		expect(wrapper.find('a').exists()).not.toBeTruthy();
+	});
 
-  it('renders the text “Copyright” when context is set to:(user defined, isLoggedIn is false and an email is set)', () => {
-    const wrapper = mount(<AppContext.Provider value={{currentUser: user, logOut:logOut}}><Footer/></AppContext.Provider>)
-    expect(wrapper.find('p').text()).toContain("Copyright");
-  })
-
-  it('renders the text "Contact us" when context is set to:( user defined, isLoggedIn is true and an email is set)', () => {
-    user.isLoggedIn = true
-    const wrapper = mount(<AppContext.Provider value={{currentUser: user, logOut:logOut}}><Footer/></AppContext.Provider>)
-    expect(wrapper.find('p').text()).toContain("Contact us");
-  })
+	it('Should check that the link is displayed when the user is logged in within the context', () => {
+		const newUser = {
+			email: 'minipachru@gmail.com',
+			password: '012345',
+			isLoggedIn: true
+		};
+		const wrapper = mount(
+			<AppContext.Provider value={{ user: newUser, logOut }}>
+				<Footer />
+			</AppContext.Provider>
+		);
+		expect(wrapper.find('a').exists()).toBeTruthy();
+	});
 });
